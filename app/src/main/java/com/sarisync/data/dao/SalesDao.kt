@@ -17,12 +17,10 @@ import kotlinx.coroutines.flow.Flow
 interface SalesDao {
 
     // ── CREATE ──────────────────────────────────────────────
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(record: SalesRecord)
 
     // ── READ — Raw ─────────────────────────────────────────
-
     @Query("SELECT * FROM sales_records ORDER BY date DESC")
     fun getAllSales(): Flow<List<SalesRecord>>
 
@@ -63,7 +61,6 @@ interface SalesDao {
     fun dailySummariesSince(startDate: String): Flow<List<DailySalesSummary>>
 
     // ── READ — Top selling items ───────────────────────────
-
     @Query(
         """
         SELECT itemName,
@@ -78,8 +75,23 @@ interface SalesDao {
     )
     fun topSellingItemsSince(startDate: String): Flow<List<TopSellingItem>>
 
-    // ── DELETE ───────────────────────────────────────────────
+    // ── READ — Average daily sales per item (for stock prediction) ──
+    /**
+     * Returns the average daily quantity sold per item since [startDate].
+     * Used by InventoryViewModel to predict when stock will run out.
+     */
+    @Query(
+        """
+        SELECT itemName,
+               CAST(SUM(quantity) AS REAL) / MAX(1, JULIANDAY('now') - JULIANDAY(:startDate)) AS avgDailySales
+        FROM sales_records
+        WHERE date >= :startDate
+        GROUP BY itemName
+        """
+    )
+    fun avgDailySalesSince(startDate: String): Flow<List<ItemAvgDailySales>>
 
+    // ── DELETE ───────────────────────────────────────────────
     @Query("DELETE FROM sales_records")
     suspend fun deleteAll()
 }
@@ -98,4 +110,10 @@ data class TopSellingItem(
     val itemName: String,
     val totalSold: Int,
     val totalRevenue: Double
+)
+
+/** Average daily sales per item — used for stock depletion prediction. */
+data class ItemAvgDailySales(
+    val itemName: String,
+    val avgDailySales: Double
 )

@@ -22,12 +22,14 @@ data class AppStrings(
     // ── Inventory Screen ───────────────────────────────
     val inventoryTitle: String,
     val addNewItem: String,
+    val addItemTitle: String,
     val itemNameLabel: String,
     val categoryLabel: String,
     val priceLabel: String,
     val costPriceLabel: String,
     val stockLabel: String,
     val saveItem: String,
+    val saveButton: String,
     val loadingInventory: String,
     val itemsCount: (Int) -> String,
     val emptyInventory: String,
@@ -39,6 +41,36 @@ data class AppStrings(
     val sellContentDesc: String,
     val deleteContentDesc: String,
     val errorPrefix: String,
+
+    // ── Search ─────────────────────────────────────────
+    val searchLabel: String,
+    val searchCustomerLabel: String,
+    val noSearchResults: String,
+
+    // ── Stock status (short labels for cards) ──────────
+    val stockOut: String,
+    val stockLow: String,
+    val stockHealthy: String,
+
+    // ── Sell Dialog (Cash / Utang) ─────────────────────
+    val sellDialogTitle: String,
+    val sellDialogQuestion: String,
+    val cashButton: String,
+    val utangButton: String,
+    val cancelButton: String,
+
+    // ── Restock Dialog ─────────────────────────────────
+    val restockButton: String,
+    val restockDialogTitle: String,
+    val currentStockLabel: String,
+    val restockQuantityLabel: String,
+    val restockConfirmButton: String,
+
+    // ── Delete Confirmation Dialog ─────────────────────
+    val deleteButton: String,
+    val deleteDialogTitle: String,
+    val deleteDialogMessage: String,
+    val deleteConfirmButton: String,
 
     // ── Category names ─────────────────────────────────
     val catDrinks: String,
@@ -62,6 +94,15 @@ data class AppStrings(
     val statusPaid: String,
     val statusModerate: String,
     val statusHigh: String,
+
+    // ── Payer Behavior Badges ──────────────────────────
+    val payerFullyPaid: String,
+    val payerGood: String,
+    val payerAverage: String,
+    val payerBad: String,
+    val payerNew: String,
+    val paymentHistory: String,
+    val transactionsPaid: String,
 
     // ── Scan Button Component ──────────────────────────
     val scanTip: String,
@@ -114,6 +155,8 @@ data class AppStrings(
     val dashboardToday: String,
     val dashboardWeek: String,
     val dashboardMonth: String,
+    val dashboardTopDebtor: String,
+    val dashboardHighestUtang: String,
 
     // ── Settings Screen ───────────────────────────────
     val settingsTitle: String,
@@ -187,12 +230,14 @@ val EnglishStrings = AppStrings(
 
     inventoryTitle = "Sari-Sync Inventory",
     addNewItem = "Add New Item",
+    addItemTitle = "Add New Item",
     itemNameLabel = "Item Name",
     categoryLabel = "Category",
     priceLabel = "Price (₱)",
     costPriceLabel = "Cost Price (₱)",
     stockLabel = "Stock",
     saveItem = "Save Item",
+    saveButton = "Save Item",
     loadingInventory = "Loading inventory...",
     itemsCount = { count -> "Items ($count)" },
     emptyInventory = "No items yet. Add your first product!",
@@ -205,6 +250,37 @@ val EnglishStrings = AppStrings(
     deleteContentDesc = "Delete",
     errorPrefix = "Error: ",
 
+    // ── Search ─────────────────────────────────────────
+    searchLabel = "Search items...",
+    searchCustomerLabel = "Search customers...",
+    noSearchResults = "No items found matching your search.",
+
+    // ── Stock status (short labels) ────────────────────
+    stockOut = "UBOS NA",
+    stockLow = "na lang (Mababa!)",
+    stockHealthy = "in stock",
+
+    // ── Sell Dialog ────────────────────────────────────
+    sellDialogTitle = "How will they pay?",
+    sellDialogQuestion = "Choose payment method:",
+    cashButton = "💵 Cash",
+    utangButton = "📝 Utang (Credit)",
+    cancelButton = "Cancel",
+
+    // ── Restock Dialog ─────────────────────────────────
+    restockButton = "Restock",
+    restockDialogTitle = "Restock Item",
+    currentStockLabel = "Current stock",
+    restockQuantityLabel = "Quantity to add",
+    restockConfirmButton = "Restock",
+
+    // ── Delete Dialog ──────────────────────────────────
+    deleteButton = "Delete",
+    deleteDialogTitle = "Delete Item?",
+    deleteDialogMessage = "Are you sure you want to remove",
+    deleteConfirmButton = "Yes, Delete",
+
+    // ── Categories ─────────────────────────────────────
     catDrinks = "Drinks",
     catFood = "Food",
     catCooking = "Cooking",
@@ -212,6 +288,7 @@ val EnglishStrings = AppStrings(
     catSnacks = "Snacks",
     catOthers = "Others",
 
+    // ── Utang / Credit ─────────────────────────────────
     creditTitle = "Credit Ledger",
     recordPayment = "Record a Payment",
     addCredit = "Add Credit",
@@ -226,6 +303,16 @@ val EnglishStrings = AppStrings(
     statusModerate = "MODERATE",
     statusHigh = "HIGH DEBT",
 
+    // ── Payer Behavior Badges ──────────────────────────
+    payerFullyPaid = "✅ Fully Paid",
+    payerGood = "🟢 Good Payer",
+    payerAverage = "🟡 Average Payer",
+    payerBad = "🔴 Bad Payer",
+    payerNew = "🆕 New Customer",
+    paymentHistory = "Payments",
+    transactionsPaid = "transactions paid",
+
+    // ── Scan ───────────────────────────────────────────
     scanTip = "Tip: Point the camera at the product name only, not the entire label.",
     scanCamera = "Scan with Camera",
     scanGallery = "Pick from Gallery",
@@ -239,6 +326,7 @@ val EnglishStrings = AppStrings(
     scanClose = "Close",
     cameraPermissionDenied = "Camera permission is needed to scan items.",
 
+    // ── Welcome ────────────────────────────────────────
     welcomeHeading = "Welcome to Sari-Sync!",
     welcomeSubheading = "Your all-in-one sari-sari store manager.\nTrack inventory, manage credit, and grow your business.",
     welcomeGetStarted = "Get Started",
@@ -274,6 +362,8 @@ val EnglishStrings = AppStrings(
     dashboardToday = "Today",
     dashboardWeek = "7 Days",
     dashboardMonth = "30 Days",
+    dashboardTopDebtor = "Top Debtor",
+    dashboardHighestUtang = "Highest outstanding credit",
 
     // ── Settings ───────────────────────────────────────
     settingsTitle = "Settings",
@@ -303,7 +393,7 @@ val EnglishStrings = AppStrings(
     settingsNotificationsDesc = "Get alerts about your store",
     settingsNotifLowStock = "Low stock warning",
     settingsNotifLowStockDesc = "Notify me when items are running low",
-    settingsNotifSales = "Sales updates",
+    settingsNotifSales = "Sales update",
     settingsNotifSalesDesc = "Notify me about daily sales summary",
 
     settingsDataManagement = "Data Management",
@@ -319,21 +409,25 @@ val EnglishStrings = AppStrings(
     settingsHelpTitle = "How to Use Sari-Sync",
     settingsHelpContent = """
 **Inventory Tab**
-• Tap "Add New Item" to add products to your store
+• Tap the "+" button to add products to your store
 • Set the selling price and cost price for each item
-• Tap "Sell" when a customer buys something
+• Tap "Sell" to choose Cash or Utang payment
+• Tap "Restock" to add more stock
+• Use the search bar to find items quickly
 • The app tracks your stock automatically
 
 **Credit Tab**
 • Record when a customer buys on credit (utang)
 • Record payments when they pay back
 • See who owes you and how much
+• Check payer behavior badges (Good/Average/Bad)
 
 **Dashboard Tab**
 • View your daily, weekly, or monthly earnings
 • See charts showing your sales trend
 • Check which items sell the most
 • Monitor your stock levels
+• See your top debtor
 
 **Settings Tab**
 • Change language anytime
@@ -364,12 +458,14 @@ val FilipinoStrings = AppStrings(
 
     inventoryTitle = "Sari-Sync Imbentaryo",
     addNewItem = "Magdagdag ng Bagong Paninda",
+    addItemTitle = "Magdagdag ng Bagong Paninda",
     itemNameLabel = "Pangalan ng Paninda",
     categoryLabel = "Kategorya",
     priceLabel = "Presyo (₱)",
     costPriceLabel = "Puhunan (₱)",
     stockLabel = "Stok",
     saveItem = "I-save ang Paninda",
+    saveButton = "I-save ang Paninda",
     loadingInventory = "Nilo-load ang imbentaryo...",
     itemsCount = { count -> "Mga Paninda ($count)" },
     emptyInventory = "Wala pang paninda. Magdagdag na ng una mong produkto!",
@@ -382,6 +478,37 @@ val FilipinoStrings = AppStrings(
     deleteContentDesc = "Tanggalin",
     errorPrefix = "May error: ",
 
+    // ── Search ─────────────────────────────────────────
+    searchLabel = "Maghanap ng paninda...",
+    searchCustomerLabel = "Maghanap ng customer...",
+    noSearchResults = "Walang nakitang paninda sa hinahanap mo.",
+
+    // ── Stock status (short labels) ────────────────────
+    stockOut = "UBOS NA",
+    stockLow = "na lang (Mababa!)",
+    stockHealthy = "ang stok",
+
+    // ── Sell Dialog ────────────────────────────────────
+    sellDialogTitle = "Paano magbabayad?",
+    sellDialogQuestion = "Pumili ng paraan ng bayad:",
+    cashButton = "💵 Cash",
+    utangButton = "📝 Utang",
+    cancelButton = "Kanselahin",
+
+    // ── Restock Dialog ─────────────────────────────────
+    restockButton = "Dagdag Stok",
+    restockDialogTitle = "Dagdagan ang Stok",
+    currentStockLabel = "Kasalukuyang stok",
+    restockQuantityLabel = "Ilang idadagdag",
+    restockConfirmButton = "Dagdagan",
+
+    // ── Delete Dialog ──────────────────────────────────
+    deleteButton = "Tanggalin",
+    deleteDialogTitle = "Tanggalin ang Paninda?",
+    deleteDialogMessage = "Sigurado ka bang gusto mong tanggalin ang",
+    deleteConfirmButton = "Oo, Tanggalin",
+
+    // ── Categories ─────────────────────────────────────
     catDrinks = "Inumin",
     catFood = "Pagkain",
     catCooking = "Pangluto",
@@ -389,6 +516,7 @@ val FilipinoStrings = AppStrings(
     catSnacks = "Meryenda",
     catOthers = "Iba Pa",
 
+    // ── Utang / Credit ─────────────────────────────────
     creditTitle = "Listahan ng Utang",
     recordPayment = "Mag-record ng Bayad",
     addCredit = "Magdagdag ng Utang",
@@ -403,6 +531,16 @@ val FilipinoStrings = AppStrings(
     statusModerate = "KATAMTAMAN",
     statusHigh = "MATAAS ANG UTANG",
 
+    // ── Payer Behavior Badges ──────────────────────────
+    payerFullyPaid = "✅ Bayad Na Lahat",
+    payerGood = "🟢 Mabuting Nagbabayad",
+    payerAverage = "🟡 Katamtamang Nagbabayad",
+    payerBad = "🔴 Masamang Nagbabayad",
+    payerNew = "🆕 Bagong Customer",
+    paymentHistory = "Mga Bayad",
+    transactionsPaid = "transaksyon na binayaran",
+
+    // ── Scan ───────────────────────────────────────────
     scanTip = "Tip: Itutok ang camera sa pangalan ng produkto lang, hindi sa buong label.",
     scanCamera = "I-scan gamit Camera",
     scanGallery = "Pumili sa Gallery",
@@ -416,6 +554,7 @@ val FilipinoStrings = AppStrings(
     scanClose = "Isara",
     cameraPermissionDenied = "Kailangan ng camera permission para mag-scan ng paninda.",
 
+    // ── Welcome ────────────────────────────────────────
     welcomeHeading = "Maligayang pagdating sa Sari-Sync!",
     welcomeSubheading = "Ang iyong all-in-one na tagapamahala ng sari-sari store.\nSubaybayan ang imbentaryo, pamahalaan ang utang, at palaguin ang negosyo mo.",
     welcomeGetStarted = "Magsimula Na",
@@ -451,6 +590,8 @@ val FilipinoStrings = AppStrings(
     dashboardToday = "Ngayon",
     dashboardWeek = "7 Araw",
     dashboardMonth = "30 Araw",
+    dashboardTopDebtor = "Pinaka-Malaking Utang",
+    dashboardHighestUtang = "Pinakamalaking natitirang utang",
 
     // ── Settings ───────────────────────────────────────
     settingsTitle = "Settings",
@@ -496,21 +637,25 @@ val FilipinoStrings = AppStrings(
     settingsHelpTitle = "Paano Gamitin ang Sari-Sync",
     settingsHelpContent = """
 **Imbentaryo Tab**
-• Pindutin ang "Magdagdag ng Bagong Paninda" para magdagdag ng produkto
+• Pindutin ang "+" button para magdagdag ng produkto
 • I-set ang presyo at puhunan ng bawat paninda
-• Pindutin ang "Ibenta" kapag may bumili
+• Pindutin ang "Ibenta" para pumili ng Cash o Utang
+• Pindutin ang "Dagdag Stok" para magdagdag ng stok
+• Gamitin ang search bar para mabilis na maghanap
 • Awtomatikong binabawasan ng app ang stok
 
 **Utang Tab**
 • I-record kapag may bumili ng utang
 • I-record kapag nagbayad sila
 • Makikita mo kung sino ang may utang at magkano
+• Tingnan ang payer behavior badges (Mabuti/Katamtaman/Masama)
 
 **Dashboard Tab**
 • Tingnan ang kita mo araw-araw, lingguhan, o buwanan
 • Makikita ang mga chart ng iyong benta
 • Alamin kung anong paninda ang pinakamabenta
 • Subaybayan ang mga stok levels
+• Makita kung sino ang may pinakamalaking utang
 
 **Settings Tab**
 • Magpalit ng wika kahit kailan

@@ -35,7 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sarisync.ui.components.LanguageSwitcher
 import com.sarisync.ui.components.SimpleBarChart
 import com.sarisync.ui.components.SimpleDualLineChart
 import com.sarisync.ui.localization.LocalStrings
@@ -88,13 +87,6 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                     .padding(horizontal = 16.dp, vertical = 12.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // ── Language Switcher ───────────────────
-                LanguageSwitcher(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                )
-
                 // ── Time Period Selector ────────────────
                 TimePeriodSelector(
                     selected = state.selectedPeriod,
@@ -390,6 +382,58 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                             stock = 0,
                             color = Color(0xFFD32F2F)
                         )
+                    }
+                }
+
+                // ══════════════════════════════════════════
+                // TOP DEBTOR ALERT
+                // ══════════════════════════════════════════
+
+                if (state.topDebtorName != null && state.topDebtorAmount > 0) {
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
+                        text = strings.dashboardTopDebtor,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFD32F2F).copy(alpha = 0.1f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = state.topDebtorName ?: "",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    color = Color(0xFFD32F2F)
+                                )
+                                Text(
+                                    text = strings.dashboardHighestUtang,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(
+                                text = "₱${"%.2f".format(state.topDebtorAmount)}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 22.sp,
+                                color = Color(0xFFD32F2F)
+                            )
+                        }
                     }
                 }
 

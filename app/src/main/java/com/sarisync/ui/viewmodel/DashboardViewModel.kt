@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 // ── Time period options ─────────────────────────────────
@@ -48,6 +47,10 @@ data class DashboardUiState(
 
     // Outstanding credit
     val totalOutstandingCredit: Double = 0.0,
+
+    // Top debtor
+    val topDebtorName: String? = null,
+    val topDebtorAmount: Double = 0.0,
 
     // Selected period
     val selectedPeriod: TimePeriod = TimePeriod.WEEK
@@ -108,7 +111,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             )
         }.combine(creditDao.getDebtPerCustomer()) { state, debts ->
             val totalCredit = debts.sumOf { maxOf(it.totalDebt, 0.0) }
-            state.copy(totalOutstandingCredit = totalCredit)
+            val topDebtor = debts.firstOrNull { it.totalDebt > 0 }
+            state.copy(
+                totalOutstandingCredit = totalCredit,
+                topDebtorName = topDebtor?.customerName,
+                topDebtorAmount = topDebtor?.totalDebt ?: 0.0
+            )
         }
     }.stateIn(
         scope = viewModelScope,

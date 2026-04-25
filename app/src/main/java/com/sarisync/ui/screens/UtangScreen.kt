@@ -15,50 +15,60 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sarisync.data.dao.CustomerDebtSummary
-import com.sarisync.ui.components.LanguageSwitcher
+import com.sarisync.data.dao.PayerBehaviorSummary
 import com.sarisync.ui.localization.LocalStrings
 import com.sarisync.ui.viewmodel.UtangUiState
 import com.sarisync.ui.viewmodel.UtangViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UtangScreen(viewModel: UtangViewModel) {
 
     val strings = LocalStrings.current
+    val state: UtangUiState by viewModel.uiState.collectAsState()
+    val behaviorMap: Map<String, PayerBehaviorSummary> by viewModel.payerBehaviorMap.collectAsState()
 
-    // ── State for the input form ────────────────────────
-    var customerName by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var isPayment by remember { mutableStateOf(false) }
+    // ── Bottom Sheet state ──────────────────────────────
+    var showAddSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
-    // ── Collect the UI State from the ViewModel ─────────
-    val state by viewModel.uiState.collectAsState()
+    // ── Search state ────────────────────────────────────
+    var searchQuery by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -75,6 +85,18 @@ fun UtangScreen(viewModel: UtangViewModel) {
                     titleContentColor = MaterialTheme.colorScheme.onSecondary
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddSheet = true },
+                containerColor = MaterialTheme.colorScheme.secondary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = strings.addCredit,
+                    tint = MaterialTheme.colorScheme.onSecondary
+                )
+            }
         }
     ) { innerPadding ->
 
@@ -82,133 +104,29 @@ fun UtangScreen(viewModel: UtangViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
 
-            // ── Language Switcher ───────────────────────────
-            LanguageSwitcher(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-            )
-
-            // ════════════════════════════════════════════
-            // INPUT FORM SECTION
-            // ════════════════════════════════════════════
-
-            Text(
-                text = if (isPayment) strings.recordPayment else strings.addCredit,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            // Customer Name field
+            // ── Search Bar ──────────────────────────────
             OutlinedTextField(
-                value = customerName,
-                onValueChange = { customerName = it },
-                label = { Text(strings.customerNameLabel) },
+                value = searchQuery,
+                onValueChange = { searchQuery = it.uppercase() },
+                label = { Text(strings.searchCustomerLabel) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RoundedCornerShape(12.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Amount field
-            OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
-                label = { Text(strings.amountLabel) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RoundedCornerShape(12.dp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Toggle between Utang and Payment
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = { isPayment = false },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (!isPayment) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(strings.addCreditButton, fontWeight = FontWeight.Bold)
-                }
-
-                Button(
-                    onClick = { isPayment = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isPayment) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(strings.paymentButton, fontWeight = FontWeight.Bold)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Save button
-            Button(
-                onClick = {
-                    val parsedAmount = amount.toDoubleOrNull() ?: 0.0
-
-                    if (customerName.isNotBlank() && parsedAmount > 0) {
-                        if (isPayment) {
-                            viewModel.recordPayment(customerName, parsedAmount)
-                        } else {
-                            viewModel.addUtang(customerName, parsedAmount)
-                        }
-                        customerName = ""
-                        amount = ""
-                    }
-                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Characters
                 )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = strings.save,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text(
-                    text = strings.save,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // ════════════════════════════════════════════
-            // DEBT LEDGER SECTION
-            // ════════════════════════════════════════════
-
+            // ── Debt List ───────────────────────────────
             when (val currentState = state) {
-
                 is UtangUiState.Loading -> {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
@@ -221,18 +139,23 @@ fun UtangScreen(viewModel: UtangViewModel) {
                 }
 
                 is UtangUiState.Success -> {
-                    val debts = currentState.debtSummaries
+                    val debts: List<CustomerDebtSummary> = currentState.debtSummaries
+                    val filteredDebts: List<CustomerDebtSummary> = if (searchQuery.isBlank()) {
+                        debts
+                    } else {
+                        debts.filter { it.customerName.uppercase().contains(searchQuery) }
+                    }
 
                     Text(
-                        text = strings.customersCount(debts.size),
+                        text = strings.customersCount(filteredDebts.size),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    if (debts.isEmpty()) {
+                    if (filteredDebts.isEmpty()) {
                         Text(
-                            text = strings.emptyCredits,
+                            text = if (searchQuery.isNotBlank()) strings.noSearchResults else strings.emptyCredits,
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 24.dp)
@@ -242,10 +165,14 @@ fun UtangScreen(viewModel: UtangViewModel) {
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             items(
-                                items = debts,
-                                key = { it.customerName }
-                            ) { debt ->
-                                DebtCard(debtSummary = debt)
+                                items = filteredDebts,
+                                key = { debt: CustomerDebtSummary -> debt.customerName }
+                            ) { debt: CustomerDebtSummary ->
+                                val behavior: PayerBehaviorSummary? = behaviorMap[debt.customerName]
+                                DebtCard(
+                                    debtSummary = debt,
+                                    behavior = behavior
+                                )
                             }
                         }
                     }
@@ -261,26 +188,204 @@ fun UtangScreen(viewModel: UtangViewModel) {
             }
         }
     }
+
+    // ════════════════════════════════════════════════════
+    // ADD UTANG / RECORD PAYMENT BOTTOM SHEET
+    // ════════════════════════════════════════════════════
+    if (showAddSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddSheet = false },
+            sheetState = sheetState
+        ) {
+            AddUtangForm(
+                strings = strings,
+                viewModel = viewModel,
+                onDone = {
+                    scope.launch {
+                        sheetState.hide()
+                        showAddSheet = false
+                    }
+                }
+            )
+        }
+    }
 }
 
+// ════════════════════════════════════════════════════════════
+// ADD UTANG / RECORD PAYMENT FORM (inside Bottom Sheet)
+// ════════════════════════════════════════════════════════════
 @Composable
-fun DebtCard(debtSummary: CustomerDebtSummary) {
+fun AddUtangForm(
+    strings: com.sarisync.ui.localization.AppStrings,
+    viewModel: UtangViewModel,
+    onDone: () -> Unit
+) {
+    var customerName by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
+    var isPayment by remember { mutableStateOf(false) }
 
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(bottom = 32.dp)
+    ) {
+        Text(
+            text = if (isPayment) strings.recordPayment else strings.addCredit,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // Toggle: Utang or Payment
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = { isPayment = false },
+                modifier = Modifier.weight(1f).height(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!isPayment) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Text(
+                    text = strings.addCreditButton,
+                    color = if (!isPayment) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Button(
+                onClick = { isPayment = true },
+                modifier = Modifier.weight(1f).height(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isPayment) Color(0xFF388E3C)
+                    else MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Text(
+                    text = strings.paymentButton,
+                    color = if (isPayment) Color.White
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Customer Name (auto-capitalize)
+        OutlinedTextField(
+            value = customerName,
+            onValueChange = { customerName = it.uppercase() },
+            label = { Text(strings.customerNameLabel) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth().height(64.dp),
+            shape = RoundedCornerShape(12.dp),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Characters
+            )
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Amount
+        OutlinedTextField(
+            value = amount,
+            onValueChange = { amount = it },
+            label = { Text(strings.amountLabel) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            modifier = Modifier.fillMaxWidth().height(64.dp),
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Save Button
+        Button(
+            onClick = {
+                val parsedAmount = amount.toDoubleOrNull() ?: 0.0
+                if (customerName.isNotBlank() && parsedAmount > 0) {
+                    if (isPayment) {
+                        viewModel.recordPayment(customerName.trim().uppercase(), parsedAmount)
+                    } else {
+                        viewModel.addUtang(customerName.trim().uppercase(), parsedAmount)
+                    }
+                    onDone()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isPayment) Color(0xFF388E3C) else MaterialTheme.colorScheme.secondary
+            ),
+            enabled = customerName.isNotBlank() && (amount.toDoubleOrNull() ?: 0.0) > 0
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = strings.save,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = strings.save,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+// DEBT CARD WITH PAYER BEHAVIOR BADGE
+// ════════════════════════════════════════════════════════════
+@Composable
+fun DebtCard(
+    debtSummary: CustomerDebtSummary,
+    behavior: PayerBehaviorSummary?
+) {
     val strings = LocalStrings.current
 
-    val (healthStatus, healthColor) = when {
-        debtSummary.totalDebt <= 0 -> strings.statusPaid to MaterialTheme.colorScheme.primary
-        debtSummary.totalDebt <= 200 -> strings.statusModerate to MaterialTheme.colorScheme.tertiary
-        else -> strings.statusHigh to MaterialTheme.colorScheme.error
+    // ── Debt health status ──────────────────────────────
+    val (healthStatus: String, healthColor: Color) = when {
+        debtSummary.totalDebt <= 0 -> strings.statusPaid to Color(0xFF388E3C)
+        debtSummary.totalDebt <= 200 -> strings.statusModerate to Color(0xFFF57C00)
+        else -> strings.statusHigh to Color(0xFFD32F2F)
     }
+
+    // ── Payer behavior classification ───────────────────
+    val behaviorResult: Triple<String, Color, String> = if (behavior != null) {
+        val paymentRatio: Double = if (behavior.totalAmountOwed > 0) {
+            behavior.totalAmountPaid / behavior.totalAmountOwed
+        } else {
+            1.0
+        }
+
+        when {
+            behavior.netDebt <= 0 -> Triple(strings.payerFullyPaid, Color(0xFF388E3C), "⭐")
+            paymentRatio >= 0.8 -> Triple(strings.payerGood, Color(0xFF388E3C), "👍")
+            paymentRatio >= 0.4 -> Triple(strings.payerAverage, Color(0xFFF57C00), "👌")
+            else -> Triple(strings.payerBad, Color(0xFFD32F2F), "👎")
+        }
+    } else {
+        Triple(strings.payerNew, Color(0xFF757575), "🆕")
+    }
+
+    val behaviorLabel: String = behaviorResult.first
+    val behaviorColor: Color = behaviorResult.second
+    val behaviorEmoji: String = behaviorResult.third
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -290,6 +395,7 @@ fun DebtCard(debtSummary: CustomerDebtSummary) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                // Customer name
                 Text(
                     text = debtSummary.customerName,
                     style = MaterialTheme.typography.titleLarge,
@@ -299,6 +405,7 @@ fun DebtCard(debtSummary: CustomerDebtSummary) {
 
                 Spacer(modifier = Modifier.height(4.dp))
 
+                // Debt amount
                 Text(
                     text = "₱${"%.2f".format(debtSummary.totalDebt)}",
                     style = MaterialTheme.typography.bodyLarge,
@@ -306,14 +413,49 @@ fun DebtCard(debtSummary: CustomerDebtSummary) {
                     color = healthColor
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
+                // Debt health status
                 Text(
                     text = healthStatus,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = healthColor
                 )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Payer behavior badge
+                Card(
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = behaviorColor.copy(alpha = 0.15f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = behaviorEmoji, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = behaviorLabel,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = behaviorColor
+                        )
+                    }
+                }
+
+                // Payment stats (if available)
+                if (behavior != null && behavior.totalUtangCount > 0) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${strings.paymentHistory}: ${behavior.totalBayadCount}/${behavior.totalUtangCount} ${strings.transactionsPaid}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             // Health indicator circle
@@ -337,7 +479,7 @@ fun DebtCard(debtSummary: CustomerDebtSummary) {
                         },
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = Color.White
                     )
                 }
             }
