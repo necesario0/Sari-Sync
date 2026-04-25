@@ -44,16 +44,6 @@ import com.sarisync.data.dao.CustomerDebtSummary
 import com.sarisync.ui.viewmodel.UtangUiState
 import com.sarisync.ui.viewmodel.UtangViewModel
 
-/**
- * Utang (Credit) Ledger Screen for Sari-Sync.
- *
- * Displays all customers and their net debt with color-coded health status:
- *   Green  = Fully paid (₱0 debt)
- *   Yellow = Moderate debt (₱1-200)
- *   Red    = High debt (₱200+)
- *
- * Allows store owner to add new utang or record payments.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UtangScreen(viewModel: UtangViewModel) {
@@ -61,7 +51,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
     // ── State for the input form ────────────────────────
     var customerName by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
-    var isPayment by remember { mutableStateOf(false) } // Toggle between utang/payment
+    var isPayment by remember { mutableStateOf(false) }
 
     // ── Collect the UI State from the ViewModel ─────────
     val state by viewModel.uiState.collectAsState()
@@ -71,7 +61,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Utang Ledger",
+                        text = "Listahan ng Utang",
                         fontWeight = FontWeight.Bold,
                         fontSize = 22.sp
                     )
@@ -96,7 +86,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
             // ════════════════════════════════════════════
 
             Text(
-                text = if (isPayment) "Record Payment" else "Add Utang",
+                text = if (isPayment) "Mag-record ng Bayad" else "Magdagdag ng Utang",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -106,7 +96,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
             OutlinedTextField(
                 value = customerName,
                 onValueChange = { customerName = it },
-                label = { Text("Customer Name") },
+                label = { Text("Pangalan ng Customer") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -120,7 +110,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
             OutlinedTextField(
                 value = amount,
                 onValueChange = { amount = it },
-                label = { Text("Amount (₱)") },
+                label = { Text("Halaga (₱)") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier
@@ -146,7 +136,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Add Utang", fontWeight = FontWeight.Bold)
+                    Text("Dagdag Utang", fontWeight = FontWeight.Bold)
                 }
 
                 Button(
@@ -159,7 +149,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Record Payment", fontWeight = FontWeight.Bold)
+                    Text("Bayad", fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -190,11 +180,11 @@ fun UtangScreen(viewModel: UtangViewModel) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Save",
+                    contentDescription = "I-save",
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = "Save",
+                    text = "I-save",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -215,7 +205,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
                     ) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Loading utang records...")
+                        Text("Nilo-load ang mga utang...")
                     }
                 }
 
@@ -223,7 +213,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
                     val debts = currentState.debtSummaries
 
                     Text(
-                        text = "Customers (${debts.size})",
+                        text = "Mga Customer (${debts.size})",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -231,7 +221,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
 
                     if (debts.isEmpty()) {
                         Text(
-                            text = "No utang records yet.",
+                            text = "Wala pang naka-utang. Sana ganito palagi!",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 24.dp)
@@ -252,7 +242,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
 
                 is UtangUiState.Error -> {
                     Text(
-                        text = "Error: ${currentState.message}",
+                        text = "May error: ${currentState.message}",
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(top = 24.dp)
                     )
@@ -262,17 +252,13 @@ fun UtangScreen(viewModel: UtangViewModel) {
     }
 }
 
-/**
- * A single customer debt card with health status indicator.
- */
 @Composable
 fun DebtCard(debtSummary: CustomerDebtSummary) {
 
-    // Determine health status based on debt amount
     val (healthStatus, healthColor) = when {
-        debtSummary.totalDebt <= 0 -> "FULLY PAID" to MaterialTheme.colorScheme.primary
-        debtSummary.totalDebt <= 200 -> "MODERATE" to MaterialTheme.colorScheme.tertiary
-        else -> "HIGH RISK" to MaterialTheme.colorScheme.error
+        debtSummary.totalDebt <= 0 -> "BAYAD NA" to MaterialTheme.colorScheme.primary
+        debtSummary.totalDebt <= 200 -> "KATAMTAMAN" to MaterialTheme.colorScheme.tertiary
+        else -> "MATAAS ANG UTANG" to MaterialTheme.colorScheme.error
     }
 
     Card(

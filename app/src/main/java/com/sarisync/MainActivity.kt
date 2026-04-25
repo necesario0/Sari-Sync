@@ -59,8 +59,8 @@ fun MainApp(
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inventory") },
-                    label = { Text("Inventory") },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Imbentaryo") },
+                    label = { Text("Imbentaryo") },
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 }
                 )
