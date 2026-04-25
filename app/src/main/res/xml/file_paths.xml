@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--
+        Required by FileProvider to share the temporary
+        camera image file with the camera app.
+        Place this at: app/src/main/res/xml/file_paths.xml
+    -->
+    <cache-path
+        name="scan_images"
+        path="." />
+</paths>
