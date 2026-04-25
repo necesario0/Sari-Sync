@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.sarisync.mlkit.TextRecognitionHelper
+import com.sarisync.ui.localization.LocalStrings
 import java.io.File
 
 @Composable
@@ -50,6 +51,7 @@ fun ScanButton(
     onTextExtracted: (String) -> Unit
 ) {
     val context = LocalContext.current
+    val strings = LocalStrings.current
 
     // ── State ───────────────────────────────────────────
     var isScanning: Boolean by remember { mutableStateOf(false) }
@@ -84,12 +86,12 @@ fun ScanButton(
                 if (lines.isNotEmpty()) {
                     showResultsDialog = true
                 } else {
-                    errorMessage = "Walang nakitang pangalan ng produkto. Subukang itutok ang camera sa pangalan lang ng paninda."
+                    errorMessage = strings.scanNoResult
                 }
             },
             onFailure = { exception: Exception ->
                 isScanning = false
-                errorMessage = "Hindi na-scan: ${exception.message}"
+                errorMessage = strings.scanError(exception.message ?: "")
             }
         )
     }
@@ -114,7 +116,7 @@ fun ScanButton(
         } else {
             Toast.makeText(
                 context,
-                "Kailangan ng camera permission para mag-scan ng paninda.",
+                strings.cameraPermissionDenied,
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -137,7 +139,7 @@ fun ScanButton(
 
         // ── Hint Text ───────────────────────────────────
         Text(
-            text = "Tip: Itutok ang camera sa pangalan ng produkto lang, hindi sa buong label.",
+            text = strings.scanTip,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp)
@@ -169,7 +171,7 @@ fun ScanButton(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("I-scan gamit Camera", fontWeight = FontWeight.SemiBold)
+                Text(strings.scanCamera, fontWeight = FontWeight.SemiBold)
             }
 
             // Gallery Button
@@ -184,7 +186,7 @@ fun ScanButton(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Pumili sa Gallery", fontWeight = FontWeight.SemiBold)
+                Text(strings.scanGallery, fontWeight = FontWeight.SemiBold)
             }
         }
 
@@ -204,7 +206,7 @@ fun ScanButton(
                     strokeWidth = 2.dp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Nag-i-scan ng text...", style = MaterialTheme.typography.bodySmall)
+                Text(strings.scanning, style = MaterialTheme.typography.bodySmall)
             }
         }
 
@@ -227,7 +229,7 @@ fun ScanButton(
             onDismissRequest = { showResultsDialog = false },
             title = {
                 Text(
-                    text = "Na-scan na Text",
+                    text = strings.scanDialogTitle,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
@@ -237,7 +239,7 @@ fun ScanButton(
                     modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {
                     Text(
-                        text = "Pindutin ang resulta para gamitin bilang pangalan ng paninda. Puwede mo pa itong i-edit pagkatapos.",
+                        text = strings.scanDialogHint,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -246,10 +248,10 @@ fun ScanButton(
                     recognizedLines.forEachIndexed { index: Int, line: String ->
 
                         if (index == 0) {
-                            // ── PINAKAMALAPIT NA RESULTA ───────
+                            // ── BEST MATCH ───────────────────────
                             Column(modifier = Modifier.padding(bottom = 4.dp)) {
                                 Text(
-                                    text = "PINAKAMALAPIT NA RESULTA",
+                                    text = strings.scanBestMatch,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF388E3C),
@@ -281,7 +283,7 @@ fun ScanButton(
 
                             if (recognizedLines.size > 1) {
                                 Text(
-                                    text = "Iba pang resulta:",
+                                    text = strings.scanOtherResults,
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
@@ -317,7 +319,7 @@ fun ScanButton(
             },
             confirmButton = {
                 TextButton(onClick = { showResultsDialog = false }) {
-                    Text("Isara")
+                    Text(strings.scanClose)
                 }
             }
         )

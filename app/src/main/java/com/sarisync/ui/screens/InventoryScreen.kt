@@ -48,7 +48,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sarisync.data.entity.InventoryItem
+import com.sarisync.ui.components.LanguageSwitcher
 import com.sarisync.ui.components.ScanButton
+import com.sarisync.ui.localization.LocalStrings
 import com.sarisync.ui.viewmodel.InventoryUiState
 import com.sarisync.ui.viewmodel.InventoryViewModel
 
@@ -56,12 +58,21 @@ import com.sarisync.ui.viewmodel.InventoryViewModel
 @Composable
 fun InventoryScreen(viewModel: InventoryViewModel) {
 
+    val strings = LocalStrings.current
+
     var itemName by remember { mutableStateOf("") }
     var itemPrice by remember { mutableStateOf("") }
     var itemStock by remember { mutableStateOf("") }
 
     // ── Dropdown State ──────────────────────────────────
-    val categories = listOf("Inumin", "Pagkain", "Pangluto", "Gamit sa Bahay", "Meryenda", "Iba Pa")
+    val categories = listOf(
+        strings.catDrinks,
+        strings.catFood,
+        strings.catCooking,
+        strings.catHousehold,
+        strings.catSnacks,
+        strings.catOthers
+    )
     var expanded by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(categories[0]) }
 
@@ -72,7 +83,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Sari-Sync Imbentaryo",
+                        text = strings.inventoryTitle,
                         fontWeight = FontWeight.Bold,
                         fontSize = 22.sp
                     )
@@ -92,8 +103,15 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
 
+            // ── Language Switcher ───────────────────────────
+            LanguageSwitcher(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            )
+
             Text(
-                text = "Magdagdag ng Bagong Paninda",
+                text = strings.addNewItem,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -112,7 +130,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             OutlinedTextField(
                 value = itemName,
                 onValueChange = { itemName = it },
-                label = { Text("Pangalan ng Paninda") },
+                label = { Text(strings.itemNameLabel) },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -132,7 +150,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                     value = selectedCategory,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Kategorya") },
+                    label = { Text(strings.categoryLabel) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                     colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                     modifier = Modifier
@@ -169,7 +187,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                 OutlinedTextField(
                     value = itemPrice,
                     onValueChange = { itemPrice = it },
-                    label = { Text("Presyo (₱)") },
+                    label = { Text(strings.priceLabel) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier
@@ -181,7 +199,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                 OutlinedTextField(
                     value = itemStock,
                     onValueChange = { itemStock = it },
-                    label = { Text("Stok") },
+                    label = { Text(strings.stockLabel) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier
@@ -217,11 +235,11 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "I-save",
+                    contentDescription = strings.save,
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = "I-save ang Paninda",
+                    text = strings.saveItem,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -240,7 +258,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                     ) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Nilo-load ang imbentaryo...")
+                        Text(strings.loadingInventory)
                     }
                 }
 
@@ -248,7 +266,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
                     val items = (state as InventoryUiState.Success).items
 
                     Text(
-                        text = "Mga Paninda (${items.size})",
+                        text = strings.itemsCount(items.size),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -256,7 +274,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
 
                     if (items.isEmpty()) {
                         Text(
-                            text = "Wala pang paninda. Magdagdag na ng una mong produkto!",
+                            text = strings.emptyInventory,
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 24.dp)
@@ -281,7 +299,7 @@ fun InventoryScreen(viewModel: InventoryViewModel) {
 
                 is InventoryUiState.Error -> {
                     Text(
-                        text = "May error: ${(state as InventoryUiState.Error).message}",
+                        text = strings.errorPrefix + (state as InventoryUiState.Error).message,
                         color = Color(0xFFD32F2F),
                         modifier = Modifier.padding(top = 24.dp)
                     )
@@ -298,6 +316,8 @@ fun InventoryItemCard(
     onSell: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val strings = LocalStrings.current
+
     val stockColor: Color = when {
         item.currentStock <= 0 -> Color(0xFFD32F2F)
         item.currentStock <= 10 -> Color(0xFFF57C00)
@@ -305,9 +325,9 @@ fun InventoryItemCard(
     }
 
     val stockLabel: String = when {
-        item.currentStock <= 0 -> "UBOS NA"
-        item.currentStock <= 10 -> "${item.currentStock} na lang (Mababa!)"
-        else -> "${item.currentStock} ang stok"
+        item.currentStock <= 0 -> strings.outOfStock
+        item.currentStock <= 10 -> strings.lowStock(item.currentStock)
+        else -> strings.inStock(item.currentStock)
     }
 
     Card(
@@ -353,7 +373,7 @@ fun InventoryItemCard(
             ) {
                 Column {
                     Text(
-                        text = "₱${"%.2f".format(item.price)} bawat isa",
+                        text = "₱${"%.2f".format(item.price)} ${strings.priceEach}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -381,16 +401,16 @@ fun InventoryItemCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = "Magbenta ng isa"
+                        contentDescription = strings.sellContentDesc
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Ibenta", fontWeight = FontWeight.Bold)
+                    Text(strings.sellButton, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Tanggalin",
+                        contentDescription = strings.deleteContentDesc,
                         tint = Color(0xFFD32F2F)
                     )
                 }
