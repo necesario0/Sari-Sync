@@ -6,36 +6,40 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.sarisync.data.dao.CreditTransactionDao
 import com.sarisync.data.dao.InventoryDao
+import com.sarisync.data.dao.SalesDao
 import com.sarisync.data.entity.CreditTransaction
 import com.sarisync.data.entity.InventoryItem
+import com.sarisync.data.entity.SalesRecord
 
 /**
  * The single Room database for the entire Sari-Sync app.
  *
- * Now includes a PrepopulateCallback that seeds the database
- * with realistic sari-sari store data on first launch.
+ * Version 2 adds:
+ *  - SalesRecord entity (sales_records table)
+ *  - costPrice column on InventoryItem
  *
- * IMPORTANT: If you change the schema during the hackathon,
- * uninstall the app from your device/emulator first so the
- * database is recreated and the seed data is inserted again.
+ * Uses fallbackToDestructiveMigration() so the database is
+ * recreated (with seed data) when the schema changes.
  */
 @Database(
     entities = [
         InventoryItem::class,
-        CreditTransaction::class
+        CreditTransaction::class,
+        SalesRecord::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class SariSyncDatabase : RoomDatabase() {
 
     abstract fun inventoryDao(): InventoryDao
     abstract fun creditTransactionDao(): CreditTransactionDao
+    abstract fun salesDao(): SalesDao
 
     companion object {
 
         @Volatile
-        var INSTANCE: SariSyncDatabase? = null  // Changed from private to internal for callback access
+        var INSTANCE: SariSyncDatabase? = null
 
         fun getDatabase(context: Context): SariSyncDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -44,7 +48,7 @@ abstract class SariSyncDatabase : RoomDatabase() {
                     SariSyncDatabase::class.java,
                     "sari_sync_database"
                 )
-                    .addCallback(PrepopulateCallback())  // ← THIS IS THE NEW LINE
+                    .addCallback(PrepopulateCallback())
                     .fallbackToDestructiveMigration()
                     .build()
 
