@@ -70,6 +70,12 @@ Contributions to Sari-Sync are welcome. Please ensure that any pull requests ali
 This project is currently unlicensed. Please contact the repository owner for permissions regarding use, modification, or distribution.
 
 
+## Team
+
+•	Cobby N. Baldonado – Frontend Developer
+•	James Carlo F. Fernando - Backend Developer
+•	Edrian C. Necesario – Lead Developer
+•	Adrianne Quinn Emmanuel C. Rosalan – Full-Stack Developer
 
 
 
