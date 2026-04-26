@@ -404,22 +404,29 @@ fun DebtCard(
         else -> strings.statusHigh to Color(0xFFD32F2F)
     }
 
-    // ── Payer behavior classification ───────────────────
+    // ── Payer behavior classification (time-based) ──────
     val behaviorResult: Triple<String, Color, String> = if (behavior != null) {
-        val paymentRatio: Double = if (behavior.totalAmountOwed > 0) {
-            behavior.totalAmountPaid / behavior.totalAmountOwed
-        } else {
-            1.0
-        }
-
         when {
-            behavior.netDebt <= 0 -> Triple(strings.payerFullyPaid, Color(0xFF388E3C), "⭐")
-            paymentRatio >= 0.8 -> Triple(strings.payerGood, Color(0xFF388E3C), "👍")
-            paymentRatio >= 0.4 -> Triple(strings.payerAverage, Color(0xFFF57C00), "👌")
-            else -> Triple(strings.payerBad, Color(0xFFD32F2F), "👎")
+            // Fully paid
+            behavior.netDebt <= 0 -> Triple("Bayad Na", Color(0xFF388E3C), "✓")
+
+            // Bad payer: unpaid for 30+ days
+            (behavior.daysSinceLastUnpaid ?: 0) > 30 -> Triple("Masamang Nagbabayad", Color(0xFFD32F2F), "⚠️")
+
+            // Bad payer: average payment delay > 30 days
+            (behavior.averagePaymentDelayDays ?: 0) > 30 -> Triple("Masamang Nagbabayad", Color(0xFFD32F2F), "⚠️")
+
+            // Average payer: pays within 30 days
+            (behavior.averagePaymentDelayDays ?: 0) > 7 -> Triple("Katamtaman", Color(0xFFF57C00), "👌")
+
+            // Good payer: pays within 7 days
+            (behavior.averagePaymentDelayDays ?: 0) <= 7 -> Triple("Mabuting Nagbabayad", Color(0xFF388E3C), "👍")
+
+            // Default: no payment history yet
+            else -> Triple("Walang History", Color(0xFF757575), "🆕")
         }
     } else {
-        Triple(strings.payerNew, Color(0xFF757575), "🆕")
+        Triple("Walang History", Color(0xFF757575), "🆕")
     }
 
     val behaviorLabel: String = behaviorResult.first
@@ -492,11 +499,11 @@ fun DebtCard(
                     }
                 }
 
-                // Payment stats (if available)
-                if (behavior != null && behavior.totalUtangCount > 0) {
+                // Payment delay info (if available)
+                if (behavior != null && behavior.averagePaymentDelayDays != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${strings.paymentHistory}: ${behavior.totalBayadCount}/${behavior.totalUtangCount} ${strings.transactionsPaid}",
+                        text = "Avg. payment delay: ${behavior.averagePaymentDelayDays} days",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

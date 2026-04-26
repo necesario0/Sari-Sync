@@ -95,12 +95,12 @@ data class AppStrings(
     val statusModerate: String,
     val statusHigh: String,
 
-    // ── Payer Behavior Badges ──────────────────────────
-    val payerFullyPaid: String,
-    val payerGood: String,
-    val payerAverage: String,
-    val payerBad: String,
-    val payerNew: String,
+    // ── Payer Behavior Badges (time-based) ────────────────────────
+    val payerFullyPaid: String,      // Paid all debts
+    val payerGood: String,           // Pays within 7 days
+    val payerAverage: String,        // Pays within 30 days
+    val payerBad: String,            // Unpaid for 30+ days
+    val payerNew: String,            // No payment history,
     val paymentHistory: String,
     val transactionsPaid: String,
 
@@ -313,11 +313,11 @@ val EnglishStrings = AppStrings(
     statusHigh = "HIGH DEBT",
 
     // ── Payer Behavior Badges ──────────────────────────
-    payerFullyPaid = "✅ Fully Paid",
-    payerGood = "🟢 Good Payer",
-    payerAverage = "🟡 Average Payer",
-    payerBad = "🔴 Bad Payer",
-    payerNew = "🆕 New Customer",
+    payerFullyPaid = "✓ Fully Paid",
+    payerGood = "👍 Good Payer (pays within 7 days)",
+    payerAverage = "👌 Average Payer (pays within 30 days)",
+    payerBad = "⚠️ Bad Payer (unpaid 30+ days)",
+    payerNew = "🆕 No Payment History",
     paymentHistory = "Payments",
     transactionsPaid = "transactions paid",
 
@@ -550,11 +550,11 @@ val FilipinoStrings = AppStrings(
     statusHigh = "MATAAS ANG UTANG",
 
     // ── Payer Behavior Badges ──────────────────────────
-    payerFullyPaid = "✅ Bayad Na Lahat",
-    payerGood = "🟢 Mabuting Nagbabayad",
-    payerAverage = "🟡 Katamtamang Nagbabayad",
-    payerBad = "🔴 Masamang Nagbabayad",
-    payerNew = "🆕 Bagong Customer",
+    payerFullyPaid = "✓ Bayad Na Lahat",
+    payerGood = "👍 Mabuting Nagbabayad (nagbabayad sa loob ng 7 araw)",
+    payerAverage = "👌 Katamtamang Nagbabayad (nagbabayad sa loob ng 30 araw)",
+    payerBad = "⚠️ Masamang Nagbabayad (walang bayad 30+ araw)",
+    payerNew = "🆕 Walang Payment History",
     paymentHistory = "Mga Bayad",
     transactionsPaid = "transaksyon na binayaran",
 

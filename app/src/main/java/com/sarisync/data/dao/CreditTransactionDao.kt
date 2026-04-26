@@ -59,27 +59,36 @@ interface CreditTransactionDao {
     fun getDistinctCustomerNames(): Flow<List<String>>
 
     /**
-     * Returns payer behavior stats for each customer:
-     * - totalUtang: count of utang transactions (positive amounts)
-     * - totalBayad: count of payment transactions (negative amounts)
-     * - totalAmountOwed: sum of all positive utang amounts
-     * - totalAmountPaid: absolute sum of all negative (payment) amounts
+     * Returns payer behavior based on payment delays (time-based):
+     * - averagePaymentDelayDays: average days between utang and payment
+     * - daysSinceLastUnpaid: days since the most recent unpaid utang
      * - netDebt: current outstanding balance
      *
-     * Used to classify customers as "Good Payer", "Bad Payer", etc.
+     * Classification:
+     * - Good Payer: pays within 7 days on average
+     * - Average Payer: pays within 30 days on average
+     * - Bad Payer: unpaid for 30+ days or no payment history
      */
     @Query(
         """
         SELECT 
             customerName,
-            SUM(CASE WHEN amountOwed > 0 THEN 1 ELSE 0 END) AS totalUtangCount,
-            SUM(CASE WHEN amountOwed < 0 THEN 1 ELSE 0 END) AS totalBayadCount,
-            SUM(CASE WHEN amountOwed > 0 THEN amountOwed ELSE 0.0 END) AS totalAmountOwed,
-            ABS(SUM(CASE WHEN amountOwed < 0 THEN amountOwed ELSE 0.0 END)) AS totalAmountPaid,
+            CAST(AVG(CASE WHEN paymentDelay >= 0 THEN paymentDelay ELSE NULL END) AS INTEGER) AS averagePaymentDelayDays,
+            CAST(MAX(CASE WHEN amountOwed > 0 THEN CAST((julianday('now') - julianday(date)) AS INTEGER) ELSE NULL END) AS INTEGER) AS daysSinceLastUnpaid,
             SUM(amountOwed) AS netDebt
-        FROM credit_transactions
+        FROM (
+            SELECT 
+                ct1.customerName,
+                ct1.date,
+                ct1.amountOwed,
+                CAST((julianday(COALESCE(MIN(CASE WHEN ct2.amountOwed < 0 AND ct2.date >= ct1.date THEN ct2.date END), 'now')) - julianday(ct1.date)) AS INTEGER) AS paymentDelay
+            FROM credit_transactions ct1
+            LEFT JOIN credit_transactions ct2 ON ct1.customerName = ct2.customerName
+            WHERE ct1.amountOwed > 0
+            GROUP BY ct1.id, ct1.customerName, ct1.date, ct1.amountOwed
+        )
         GROUP BY customerName
-        ORDER BY netDebt DESC
+        ORDER BY daysSinceLastUnpaid DESC
         """
     )
     fun getPayerBehavior(): Flow<List<PayerBehaviorSummary>>
@@ -108,19 +117,21 @@ data class CustomerDebtSummary(
 )
 
 /**
- * Read-only projection for payer behavior analysis.
+ * Read-only projection for time-based payer behavior analysis.
  *
- * paymentRatio = totalAmountPaid / totalAmountOwed
- *   - >= 0.8  → "Mabuting Nagbabayad" (Good Payer)
- *   - >= 0.4  → "Katamtaman" (Average Payer)
- *   - < 0.4   → "Masamang Nagbabayad" (Bad Payer)
- *   - netDebt <= 0 → "Bayad Na Lahat" (Fully Paid)
+ * averagePaymentDelayDays: average number of days between utang and payment
+ * daysSinceLastUnpaid: days since the most recent unpaid utang
+ * netDebt: current outstanding balance
+ *
+ * Classification (in UtangViewModel):
+ * - Good Payer: averagePaymentDelayDays <= 7 days
+ * - Average Payer: averagePaymentDelayDays <= 30 days
+ * - Bad Payer: averagePaymentDelayDays > 30 days OR daysSinceLastUnpaid > 30 days
+ * - Fully Paid: netDebt <= 0
  */
 data class PayerBehaviorSummary(
     val customerName: String,
-    val totalUtangCount: Int,
-    val totalBayadCount: Int,
-    val totalAmountOwed: Double,
-    val totalAmountPaid: Double,
+    val averagePaymentDelayDays: Int?,
+    val daysSinceLastUnpaid: Int?,
     val netDebt: Double
 )
