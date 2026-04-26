@@ -21,7 +21,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -214,6 +217,7 @@ fun UtangScreen(viewModel: UtangViewModel) {
 // ════════════════════════════════════════════════════════════
 // ADD UTANG / RECORD PAYMENT FORM (inside Bottom Sheet)
 // ════════════════════════════════════════════════════════════
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddUtangForm(
     strings: com.sarisync.ui.localization.AppStrings,
@@ -223,6 +227,8 @@ fun AddUtangForm(
     var customerName by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var isPayment by remember { mutableStateOf(false) }
+    var customerDropdownExpanded by remember { mutableStateOf(false) }
+    val customerNames by viewModel.customerNames.collectAsState()
 
     Column(
         modifier = Modifier
@@ -278,18 +284,57 @@ fun AddUtangForm(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Customer Name (auto-capitalize)
-        OutlinedTextField(
-            value = customerName,
-            onValueChange = { customerName = it.uppercase() },
-            label = { Text(strings.customerNameLabel) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().height(64.dp),
-            shape = RoundedCornerShape(12.dp),
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Characters
+        // Customer Name
+        if (isPayment && customerNames.isNotEmpty()) {
+            // Payment: Use dropdown
+            ExposedDropdownMenuBox(
+                expanded = customerDropdownExpanded,
+                onExpandedChange = { customerDropdownExpanded = !customerDropdownExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = customerName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Select Customer") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = customerDropdownExpanded) },
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                        .height(64.dp),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = customerDropdownExpanded,
+                    onDismissRequest = { customerDropdownExpanded = false }
+                ) {
+                    customerNames.forEach { name ->
+                        DropdownMenuItem(
+                            text = { Text(text = name) },
+                            onClick = {
+                                customerName = name
+                                customerDropdownExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
+                    }
+                }
+            }
+        } else {
+            // Add Credit or Payment with no customers: Use text input
+            OutlinedTextField(
+                value = customerName,
+                onValueChange = { customerName = it.uppercase() },
+                label = { Text(strings.customerNameLabel) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().height(64.dp),
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Characters
+                )
             )
-        )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 

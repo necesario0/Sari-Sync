@@ -210,7 +210,16 @@ data class AppStrings(
     val settingsHelpContent: String,
 
     // App version
-    val settingsVersion: String
+    val settingsVersion: String,
+
+    // ── Stock Prediction (Inventory warnings) ──────────
+    val predictionUrgent: String,
+    val predictionWarning: String,
+    val predictionOutOfStock: String,
+
+    // ── Customer Dropdown (Utang/Payment) ──────────────
+    val selectCustomerLabel: String,
+    val noCustomersYet: String
 )
 
 // ════════════════════════════════════════════════════════
@@ -438,7 +447,16 @@ val EnglishStrings = AppStrings(
 **Tip:** Sell items through the app so your dashboard stays accurate!
 """,
 
-    settingsVersion = "Sari-Sync v1.0"
+    settingsVersion = "Sari-Sync v1.0",
+
+    // Stock Prediction
+    predictionUrgent = "Will run out in %d day(s)!",
+    predictionWarning = "Will run out in %d days",
+    predictionOutOfStock = "Out of stock!",
+
+    // Customer Dropdown
+    selectCustomerLabel = "Select Customer",
+    noCustomersYet = "No customers yet"
 )
 
 // ════════════════════════════════════════════════════════
@@ -666,5 +684,14 @@ val FilipinoStrings = AppStrings(
 **Tip:** Ibenta ang mga paninda sa app para accurate ang dashboard mo!
 """,
 
-    settingsVersion = "Sari-Sync v1.0"
+    settingsVersion = "Sari-Sync v1.0",
+
+    // Stock Prediction
+    predictionUrgent = "Mauubos sa loob ng %d araw!",
+    predictionWarning = "Mauubos sa loob ng %d araw",
+    predictionOutOfStock = "Ubos na!",
+
+    // Customer Dropdown
+    selectCustomerLabel = "Pumili ng Customer",
+    noCustomersYet = "Walang customer pa"
 )
